@@ -22,7 +22,7 @@
       justify-content: start;
     }
     h1 {
-      color: #4A90E2; /* Cor do título alterada para um azul mais forte */
+      color: #4A90E2;
       font-size: 48px;
       text-shadow: 0px 0px 10px #000, 0px 0px 15px #004466;
       margin-top: 20px;
@@ -104,16 +104,6 @@
       text-align: left;
       box-shadow: 0px 0px 10px rgba(0, 209, 255, 0.5);
     }
-    #qrCodeContainer {
-      margin-top: 20px;
-      text-align: center;
-    }
-    #qrCodeContainer img {
-      width: 150px;
-      height: 150px;
-      border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-    }
   </style>
 </head>
 <body>
@@ -160,12 +150,6 @@
     <p id="resultado"></p>
     <div id="temporizador">Tempo: <span id="tempoRestante"></span>s</div>
     <div id="vidas">Vidas: <span id="iconeVidas">❤❤❤</span></div>
-  </div>
-
-  <!-- Contêiner para o QR Code -->
-  <div id="qrCodeContainer">
-    <p>Escaneie o QR Code abaixo com seu telefone:</p>
-    <img src="qr-code.png" alt="QR Code">
   </div>
 
   <script>
