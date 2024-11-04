@@ -214,11 +214,10 @@
       indicePerguntaAtual = 0;
       vidas = 3;
       acertos = 0;
-      document.getElementById('resultado').innerText = ''; // Limpa a mensagem de resultado anterior
+      document.getElementById('resultado').innerText = '';
       atualizarVidas();
-      perguntas = [...perguntasQuiz[personagem]]; // Copia as perguntas do personagem
-      perguntas.forEach(pergunta => pergunta.respostas.sort(() => Math.random() - 0.5)); // Embaralha respostas
-      perguntas.sort(() => Math.random() - 0.5); // Embaralha perguntas
+      perguntas = [...perguntasQuiz[personagem]];
+      perguntas.sort(() => Math.random() - 0.5);
       document.getElementById('caixaQuiz').style.display = 'block';
       mostrarPergunta();
     }
