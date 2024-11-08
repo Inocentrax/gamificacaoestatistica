@@ -42,7 +42,7 @@
       border-radius: 10px;
       overflow: hidden;
       transition: transform 0.2s;
-      box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.4);
+      box-shadow: 0px 0px 10px #00ffff66;
       border: 2px solid rgba(0, 209, 255, 0.7);
       text-align: center;
     }
@@ -55,6 +55,10 @@
       font-size: 14px;
       margin-top: 5px;
       text-shadow: 0px 0px 5px #000, 0px 0px 10px #004466;
+    }
+    h3 {
+      color: #00ffff66;
+      font-size: 16px;
     }
     #inputNomeContainer {
       margin: 20px;
@@ -110,37 +114,44 @@
   <h1>Ken Estatística Quiz</h1>
   
   <div id="inputNomeContainer">
-    <label for="inputNome">Digite seu nome para iniciar:</label>
-    <input type="text" id="inputNome" placeholder="Seu nome">
-    <button id="botaoIniciar" onclick="iniciarJogo()">Iniciar Jogo</button>
+        <label for="inputNome">Digite seu nome para iniciar:</label>
+        <input type="text" id="inputNome" placeholder="Seu nome">
+        <button id="botaoIniciar" onclick="iniciarJogo()">Iniciar Jogo</button>
   </div>
 
   <button id="botaoRegras" onclick="mostrarRegras()" style="display: none;">Regras do Jogo</button>
 
   <div id="regras">
     <p>1. Escolha um personagem para responder a perguntas de estatística.</p>
-    <p>2. Cada personagem tem 5 perguntas diferentes.</p>
-    <p>3. Você começa com 3 vidas. Cada erro ou tempo expirado perde uma vida.</p>
-    <p>4. Expirando a última vida, o jogo termina.</p>
-    <p>5. Se você acertar todas as perguntas, ganhará um bombom virtual!</p>
+    <p>2. Cada personagem representa um nível e possui 5 perguntas diferentes.</p>
+    <p>3. Você começa com 3 vidas. Cada erro ou resposta não respondida dentro do tempo (30 segundos) resulta na perda de uma vida.</p>
+    <p>4. Se suas vidas chegarem a zero, o nível atual termina e poderá tentar novamente o mesmo.</p>
+    <p>5. Conclua o jogo e ganhe um chocolate Bis (aproveite enquanto durar o estoque rsrs)</p>
+    <p>6. Faça uma captura de tela do jogo concluído.</p>
+    <p>7. Cada jogador só terá direito a 1 chocolate Bis.</p>
+    <p>8. DIVIRTA-SE estudando Estatística</p>
   </div>
 
   <div class="container" id="personagens" style="display: none;">
     <div class="personagem" onclick="selecionarPersonagem('Robert')">
       <img src="robert.jpg" alt="Robert" width="100%">
       <div class="nome-personagem">Robert</div>
+      <h3 class="nivel" style="color: #00d1ff; text-shadow: 0px 0px 5px #000, 0px 0px 10px #004466;">Nível 1</h3>
     </div>
     <div class="personagem" onclick="selecionarPersonagem('Geraldo')">
       <img src="geraldo.jpg" alt="Geraldo" width="100%">
       <div class="nome-personagem">Geraldo</div>
+      <h3 class="nivel" style="color: #00d1ff; text-shadow: 0px 0px 5px #000, 0px 0px 10px #004466;">Nível 2</h3>
     </div>
     <div class="personagem" onclick="selecionarPersonagem('Vitalino')">
       <img src="vitalino.jpg" alt="Vitalino" width="100%">
       <div class="nome-personagem">Vitalino</div>
+      <h3 class="nivel" style="color: #00d1ff; text-shadow: 0px 0px 5px #000, 0px 0px 10px #004466;">Nível 3</h3>
     </div>
     <div class="personagem" onclick="selecionarPersonagem('Keslon')">
       <img src="keslon.jpg" alt="Keslon" width="100%">
       <div class="nome-personagem">Keslon</div>
+      <h3 class="nivel" style="color: #00d1ff; text-shadow: 0px 0px 5px #000, 0px 0px 10px #004466;">Nível 4</h3>
     </div>
   </div>
 
@@ -150,7 +161,9 @@
     <p id="resultado"></p>
     <div id="temporizador">Tempo: <span id="tempoRestante"></span>s</div>
     <div id="vidas">Vidas: <span id="iconeVidas">❤❤❤</span></div>
+    <div id="nivelJogador" style="font-size: 20px; color: #00d1ff; margin-top: 10px;">Nível Atual: 1</div>
   </div>
+
 
   <script>
     let nomeJogador = '';
@@ -161,122 +174,183 @@
     let perguntas = [];
     let temporizador;
     let tempoLimite;
+    let nivelAtual = 1;  // Nível inicial
+    let temposJogadores = {};  // Guarda o tempo gasto de cada jogador
+    let respostaVisivel = false; // Variável para controlar quando mostrar a resposta
+    let tempoTotal = 0; // Tempo total gasto no jogo
+    let tempoPorNivel = {}; // Armazena o tempo gasto por cada nível
 
     const perguntasQuiz = {
-      'Robert': [
-        { pergunta: 'Qual a média de uma série de dados com valores 2, 3 e 4?', respostas: ['2.5', '3', '3.5', '4'], correta: 1 },
-        { pergunta: 'Qual a medida mais utilizada para avaliar dispersão?', respostas: ['Mediana', 'Média', 'Variância', 'Moda'], correta: 2 },
-        { pergunta: 'O que mede uma regressão linear?', respostas: ['Relação entre variáveis', 'Moda', 'Variância', 'Média'], correta: 0 },
-        { pergunta: 'Qual a chance de tirar 6 num dado de 6 faces?', respostas: ['1/6', '1/3', '1/2', '1'], correta: 0 },
-        { pergunta: 'Qual comando exibe a estrutura de dados em R?', respostas: ['str()', 'print()', 'summary()', 'head()'], correta: 0 }
-      ],
-      'Geraldo': [
-        { pergunta: 'Qual é o valor central em uma lista 3, 5, 7?', respostas: ['5', '6', '4', '3'], correta: 0 },
-        { pergunta: 'Qual a diferença entre variância e desvio padrão?', respostas: ['Nenhuma', 'Raiz quadrada', 'Dobro', 'Metade'], correta: 1 },
-        { pergunta: 'Como identificamos a relação entre duas variáveis?', respostas: ['Média', 'Correlação', 'Moda', 'Mínimo'], correta: 1 },
-        { pergunta: 'Qual a probabilidade de sair "cara" em uma moeda?', respostas: ['50%', '25%', '75%', '100%'], correta: 0 },
-        { pergunta: 'Como criamos uma matriz em R?', respostas: ['array()', 'data.frame()', 'matrix()', 'c()'], correta: 2 }
-      ],
-      'Vitalino': [
-        { pergunta: 'Qual é a moda de 2, 2, 3, 3, 4?', respostas: ['2', '3', '4', 'Nenhuma'], correta: 3 },
-        { pergunta: 'Qual a unidade de variância?', respostas: ['Nenhuma', 'Quadrado da unidade', 'Raiz quadrada', 'Dobro'], correta: 1 },
-        { pergunta: 'Que tipo de análise mede a relação entre variáveis dependentes e independentes?', respostas: ['Probabilidade', 'Média', 'Regressão', 'Mediana'], correta: 2 },
-        { pergunta: 'O que significa P(A ∩ B)?', respostas: ['A ou B', 'A e B', 'Só A', 'Só B'], correta: 1 },
-        { pergunta: 'Qual função calcula média em R?', respostas: ['mean()', 'avg()', 'med()', 'mean(x,y)'], correta: 0 }
-      ],
-      'Keslon': [
-        { pergunta: 'Qual é a mediana dos valores 1, 2, 3, 4, 5?', respostas: ['2', '3', '4', '5'], correta: 1 },
-        { pergunta: 'Qual é a unidade de medida de dispersão mais comum?', respostas: ['Média', 'Mediana', 'Desvio Padrão', 'Moda'], correta: 2 },
-        { pergunta: 'Em uma correlação positiva, o que ocorre?', respostas: ['Aumentam juntos', 'Aumenta um, diminui outro', 'Nenhum', 'Depende'], correta: 0 },
-        { pergunta: 'Se a chance de A é 1/4, qual a chance de não A?', respostas: ['1/4', '3/4', '1/2', '1'], correta: 1 },
-        { pergunta: 'Qual comando exibe os 6 primeiros dados em R?', respostas: ['head()', 'tail()', 'print()', 'str()'], correta: 0 }
-      ]
-    };
+  'Robert': [
+    { pergunta: 'Qual a média de uma série de dados com valores 2, 3 e 4?', respostas: ['2.5', '3', '3.5', '4'], correta: 1 },
+    { pergunta: 'Qual a medida mais utilizada para avaliar dispersão?', respostas: ['Mediana', 'Média', 'Variância', 'Moda'], correta: 2 },
+    { pergunta: 'O que mede uma regressão linear?', respostas: ['Relação entre variáveis', 'Moda', 'Variância', 'Média'], correta: 0 },
+    { pergunta: 'Qual a chance de tirar 6 num dado de 6 faces?', respostas: ['1/6', '1/3', '1/2', '1'], correta: 0 },
+    { pergunta: 'Qual comando exibe a estrutura de dados em R?', respostas: ['str()', 'print()', 'summary()', 'head()'], correta: 0 }
+  ],
+  'Geraldo': [
+    { pergunta: 'Qual é o valor central em uma lista 3, 5, 7?', respostas: ['5', '6', '4', '3'], correta: 0 },
+    { pergunta: 'Qual a diferença entre variância e desvio padrão?', respostas: ['Nenhuma', 'Raiz quadrada', 'Dobro', 'Metade'], correta: 1 },
+    { pergunta: 'Como identificamos a relação entre duas variáveis?', respostas: ['Média', 'Correlação', 'Moda', 'Mínimo'], correta: 1 },
+    { pergunta: 'Qual a probabilidade de sair "cara" em uma moeda?', respostas: ['50%', '25%', '75%', '100%'], correta: 0 },
+    { pergunta: 'Como criamos uma matriz em R?', respostas: ['array()', 'data.frame()', 'matrix()', 'c()'], correta: 2 }
+  ],
+  'Vitalino': [
+    { pergunta: 'Qual é a moda de 2, 2, 3, 3, 4?', respostas: ['2', '3', '4', 'Nenhuma'], correta: 3 },
+    { pergunta: 'Qual a unidade de variância?', respostas: ['Nenhuma', 'Quadrado da unidade', 'Raiz quadrada', 'Dobro'], correta: 1 },
+    { pergunta: 'Que tipo de análise mede a relação entre variáveis dependentes e independentes?', respostas: ['Probabilidade', 'Média', 'Regressão', 'Mediana'], correta: 2 },
+    { pergunta: 'O que significa P(A ∩ B)?', respostas: ['A ou B', 'A e B', 'Só A', 'Só B'], correta: 1 },
+    { pergunta: 'Qual função calcula média em R?', respostas: ['mean()', 'avg()', 'med()', 'mean(x,y)'], correta: 0 }
+  ],
+  'Keslon': [
+    { pergunta: 'Qual é a mediana dos valores 1, 2, 3, 4, 5?', respostas: ['2', '3', '4', '5'], correta: 1 },
+    { pergunta: 'Qual é a unidade de medida de dispersão mais comum?', respostas: ['Média', 'Mediana', 'Desvio Padrão', 'Moda'], correta: 2 },
+    { pergunta: 'Em uma correlação positiva, o que ocorre?', respostas: ['Aumentam juntos', 'Aumenta um, diminui outro', 'Nenhum', 'Depende'], correta: 0 },
+    { pergunta: 'Se a chance de A é 1/4, qual a chance de não A?', respostas: ['1/4', '3/4', '1/2', '1'], correta: 1 },
+    { pergunta: 'Qual comando exibe os 6 primeiros dados em R?', respostas: ['head()', 'tail()', 'print()', 'str()'], correta: 0 }
+  ]
+};
 
-    function iniciarJogo() {
-      nomeJogador = document.getElementById('inputNome').value.trim();
-      if (nomeJogador === '') {
-        alert('Por favor, insira seu nome para começar o jogo.');
-        return;
-      }
-      document.getElementById('inputNomeContainer').style.display = 'none';
-      document.getElementById('botaoRegras').style.display = 'inline-block';
-      document.getElementById('personagens').style.display = 'flex';
-    }
+// Função que inicia o jogo
+function iniciarJogo() {
+  nomeJogador = document.getElementById('inputNome').value.trim();
+  if (nomeJogador === '') {
+    alert('Por favor, insira seu nome para começar o jogo.');
+    return;
+  }
+  document.getElementById('inputNomeContainer').style.display = 'none';
+  document.getElementById('botaoRegras').style.display = 'inline-block';
+  document.getElementById('personagens').style.display = 'flex';
+}
 
-    function mostrarRegras() {
-      const regras = document.getElementById('regras');
-      regras.style.display = regras.style.display === 'none' ? 'block' : 'none';
-    }
+// Função para mostrar as regras do jogo
+function mostrarRegras() {
+  const regras = document.getElementById('regras');
+  regras.style.display = regras.style.display === 'none' ? 'block' : 'none';
+}
 
-    function selecionarPersonagem(personagem) {
-      personagemAtual = personagem;
-      indicePerguntaAtual = 0;
-      vidas = 3;
-      acertos = 0;
-      document.getElementById('resultado').innerText = '';
-      atualizarVidas();
-      perguntas = [...perguntasQuiz[personagem]];
-      perguntas.sort(() => Math.random() - 0.5);
-      document.getElementById('caixaQuiz').style.display = 'block';
-      mostrarPergunta();
-    }
+// Função para selecionar o personagem e começar o quiz
+function selecionarPersonagem(personagem) {
+  // Verifica se o personagem é válido para o nível atual
+  if (personagem !== getPersonagemParaNivel()) {
+    alert('Você deve concluir o nível atual antes de avançar!');
+    return;
+  }
 
-    function iniciarTemporizador() {
-      tempoLimite = 30;
-      document.getElementById('tempoRestante').innerText = tempoLimite;
-      temporizador = setInterval(() => {
-        tempoLimite--;
-        document.getElementById('tempoRestante').innerText = tempoLimite;
-        if (tempoLimite <= 0) {
-          clearInterval(temporizador);
-          verificarResposta(false, "tempo");
-        }
-      }, 1000);
-    }
+  personagemAtual = personagem;
+  indicePerguntaAtual = 0;
+  vidas = 3;
+  acertos = 0;
+  document.getElementById('resultado').innerText = '';
+  atualizarVidas();
+  perguntas = [...perguntasQuiz[personagem]];
+  perguntas.sort(() => Math.random() - 0.5);
+  document.getElementById('caixaQuiz').style.display = 'block';
+  document.getElementById('nivelJogador').innerText = `Nível Atual: ${nivelAtual}`;
+  mostrarPergunta();
+}
 
-    function mostrarPergunta() {
+// Função para iniciar o temporizador
+function iniciarTemporizador() {
+  tempoLimite = 30;
+  document.getElementById('tempoRestante').innerText = tempoLimite;
+  temporizador = setInterval(() => {
+    tempoLimite--;
+    document.getElementById('tempoRestante').innerText = tempoLimite;
+    if (tempoLimite <= 0) {
       clearInterval(temporizador);
-      iniciarTemporizador();
-      const perguntaAtual = perguntas[indicePerguntaAtual];
-      document.getElementById('textoPergunta').innerText = perguntaAtual.pergunta;
-      const botoesResposta = document.getElementById('botoesResposta');
-      botoesResposta.innerHTML = '';
-      perguntaAtual.respostas.forEach((resposta, index) => {
-        const botao = document.createElement('button');
-        botao.classList.add('botao-resposta');
-        botao.innerText = resposta;
-        botao.onclick = () => {
-          clearInterval(temporizador);
-          verificarResposta(index === perguntaAtual.correta);
-        };
-        botoesResposta.appendChild(botao);
-      });
+      verificarResposta(false, "tempo");
     }
+  }, 1000);
+}
 
-    function verificarResposta(correta, motivo = "") {
-      if (correta) {
-        document.getElementById('resultado').innerText = 'Correto!';
-        acertos++;
+// Função para mostrar a pergunta atual
+function mostrarPergunta() {
+  clearInterval(temporizador);
+  iniciarTemporizador();
+  const perguntaAtual = perguntas[indicePerguntaAtual];
+  document.getElementById('textoPergunta').innerText = perguntaAtual.pergunta;
+  const botoesResposta = document.getElementById('botoesResposta');
+  botoesResposta.innerHTML = '';
+  perguntaAtual.respostas.forEach((resposta, index) => {
+    const botao = document.createElement('button');
+    botao.classList.add('botao-resposta');
+    botao.innerText = resposta;
+    botao.onclick = () => {
+      if (respostaVisivel) return; // Impede que o jogador clique enquanto a resposta está visível
+      respostaVisivel = true;
+      clearInterval(temporizador);
+      verificarResposta(index === perguntaAtual.correta);
+    };
+    botoesResposta.appendChild(botao);
+  });
+}
+
+// Função que verifica a resposta dada pelo jogador
+function verificarResposta(correta, motivo = "") {
+  if (correta) {
+    document.getElementById('resultado').innerText = 'Correto!';
+    acertos++;
+  } else {
+    vidas--;
+    atualizarVidas();
+    document.getElementById('resultado').innerText = motivo === "tempo" ? "Tempo expirou!" : "Você errou!";
+  }
+
+  // Espera 2 segundos antes de avançar para a próxima pergunta
+  setTimeout(() => {
+    respostaVisivel = false;
+    if (vidas === 0) {
+      document.getElementById('resultado').innerText = `Fim de jogo, ${nomeJogador}! Tente novamente.`;
+    } else if (indicePerguntaAtual < perguntas.length - 1) {
+      indicePerguntaAtual++;
+      mostrarPergunta();
+    } else {
+      if (vidas > 0) {
+        document.getElementById('resultado').innerText = `Parabéns, ${nomeJogador}! Você completou o nível!`;
+
+        // Avança para o próximo nível se o jogador tiver pelo menos 1 vida
+        if (vidas > 0) {
+          if (nivelAtual < 4) {
+            nivelAtual++;
+            vidas = 3;  // Reinicia as vidas a cada nível
+            document.getElementById('nivelJogador').innerText = `Nível Atual: ${nivelAtual}`;
+            setTimeout(() => selecionarPersonagem(getProximoPersonagem()), 1500); // Muda de personagem
+          } else {
+            document.getElementById('resultado').innerText = `Fim do jogo! Você completou todos os níveis!`;
+          }
+        }
       } else {
-        vidas--;
-        atualizarVidas();
-        document.getElementById('resultado').innerText = motivo === "tempo" ? "Tempo expirou!" : "Você errou!";
-      }
-
-      if (vidas === 0) {
-        document.getElementById('resultado').innerText = `Fim de jogo, ${nomeJogador}! Tente novamente.`;
-      } else if (indicePerguntaAtual < perguntas.length - 1) {
-        indicePerguntaAtual++;
-        setTimeout(mostrarPergunta, 1000);
-      } else {
-        document.getElementById('resultado').innerText = vidas > 0 ? `Parabéns, ${nomeJogador}! Você ganhou um bombom!` : "Jogo completo!";
+        document.getElementById('resultado').innerText = "Jogo completo!";
       }
     }
+  }, 2000);
+}
 
-    function atualizarVidas() {
-      document.getElementById('iconeVidas').innerText = '❤'.repeat(vidas);
-    }
-  </script>
+// Função para obter o personagem do próximo nível
+function getProximoPersonagem() {
+  switch (nivelAtual) {
+    case 1: return 'Geraldo';
+    case 2: return 'Vitalino';
+    case 3: return 'Keslon';
+    default: return 'Keslon';  
+  }
+}
+
+// Função para garantir que o jogador só escolha o personagem do nível correto
+function getPersonagemParaNivel() {
+  switch (nivelAtual) {
+    case 1: return 'Robert';
+    case 2: return 'Geraldo';
+    case 3: return 'Vitalino';
+    case 4: return 'Keslon';
+    default: return 'Robert'; // Inicia sempre com Robert no nível 1
+  }
+}
+
+// Função para atualizar as vidas na interface
+function atualizarVidas() {
+  document.getElementById('iconeVidas').innerText = '❤'.repeat(vidas);
+}
+</script>
 </body>
-</html>
